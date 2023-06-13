@@ -9,7 +9,6 @@ import config
 
 
 bot = commands.Bot(command_prefix='^')
-publicKey, privateKey = rsa.newkeys(512)
 @bot.event
 async def on_ready():
     print("ready")
@@ -28,8 +27,6 @@ async def create(ctx):
     password = password.content
     if len(password) <= 1:
         password = ""
-    else:
-        password = str(rsa.encrypt(password.encode(),publicKey))
     users = open("users.txt","a+")
     users.write(user+",\n")
     passwords = open("passwords.txt","a+")
@@ -39,10 +36,47 @@ async def create(ctx):
 @bot.command()
 async def join(ctx):
     user = str(ctx.author.id)
-    users = "".join(open("users.txt","r").read().split("\n")).split(",")
-    if user in users:
+    users =  open("users.txt","r").read().split("\n")
+    if user in "".join(users).split(","):
         await ctx.author.send("You are already in an active session, so you cannot join another.")
         return
-    await ctx.author.send("")
+    listOfSessions = ""
+    if len(users) <= 1:
+        await ctx.author.send("There are no active sessions.")
+        return
+    for usr in users:
+        usersPerSession = usr.split(",")
+        for x in range(len(usersPerSession)-1):
+            print(usersPerSession[x])
+            player = await bot.fetch_user(int(usersPerSession[x]))
+            player = player.name
+            listOfSessions+="**"+str((x+1))+"**: "+player+", "
+        listOfSessions+="\n"
+    await ctx.author.send(listOfSessions)
+    await ctx.author.send("Select an active session to join by typing the number of the session.")
+    def check(m):
+        return m.author==ctx.author and isinstance(m.channel, discord.DMChannel) and m.content.isdigit()
+    response = await bot.wait_for("message",check = check)
+    response = int(response.content)
+    if response <= 0 or response > len(users):
+        await ctx.author.send("The session number you entered is invalid.")
+        return
+    password = open("passwords.txt","r").read().split("\n")[response-1]
+    passwordResponse = ""
+    if password != "":
+        await ctx.author.send("Enter the session password: ")
+        def check2(m):
+            return m.author==ctx.author and isinstance(m.channel, discord.DMChannel)
+        passwordResponse = await bot.wait_for("message",check=check2)
+        passwordResponse = passwordResponse.content
+        if passwordResponse==password:
+            passwordResponse = ""
+    if passwordResponse == "":
+        users[response-1]+= user+","
+        open("users.txt","w").write("\n".join(users))
+        await ctx.author.send("Successfully joined session!")
+        await ctx.channel.send(ctx.author.mention+" successfully joined Session #"+str(response)+" (<@"+str(int(users[response-1].split(",")[0]))+">'s lobby)")
+        return
+    await ctx.author.send("Incorrect session password")
     
 bot.run(config.botToken)
