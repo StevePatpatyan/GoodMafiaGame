@@ -5,6 +5,7 @@ from discord.ext import commands
 from discord.ext.commands import MemberConverter
 import os
 import config
+from random import randint
 
 
 
@@ -88,11 +89,30 @@ async def play(ctx):
         await ctx.author.send("You are not a host of any active session.")
         return
     usersInSession = users[hosts.index(user)].split(",")
+    if len(usersInSession) <= 4:
+        await ctx.channel.send("There are not enough players to begin.")
+        return
     usersInSession.pop(0)
     for x in range(len(usersInSession)-1):
         usersInSession[x] = "<@"+usersInSession[x]+">"
     usersInSession = "".join(usersInSession)
     await ctx.channel.send(usersInSession+" <@"+user+"> has started the Mafia Game!")
+    #################################################################################
+    usersInSession = users[hosts.index(user)].split(",")
+    roles = ["mafia","doctor","detective","townperson"]
+    players = {}
+    for x in range(len(usersInSession)-1-4):
+        roles.append("townsperson")
+    await ctx.channel.send("Assigning roles to players...")
+    for usr in usersInSession:
+        if usr == "":
+            break
+        roleIndex = randint(0,len(roles)-1)
+        players[int(usr)] = roles[roleIndex]
+        recipient = await bot.fetch_user(int(usr))
+        recipient.send("You are "+players[int(usr)])
+        roles.pop(roleIndex)
+
     
         
 bot.run(config.botToken)
