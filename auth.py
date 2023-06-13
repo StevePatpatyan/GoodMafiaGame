@@ -47,7 +47,6 @@ async def join(ctx):
     for usr in users:
         usersPerSession = usr.split(",")
         for x in range(len(usersPerSession)-1):
-            print(usersPerSession[x])
             player = await bot.fetch_user(int(usersPerSession[x]))
             player = player.name
             listOfSessions+="**"+str((x+1))+"**: "+player+", "
@@ -78,5 +77,22 @@ async def join(ctx):
         await ctx.channel.send(ctx.author.mention+" successfully joined Session #"+str(response)+" (<@"+str(int(users[response-1].split(",")[0]))+">'s lobby)")
         return
     await ctx.author.send("Incorrect session password")
+@bot.command()
+async def play(ctx):
+    hosts = []
+    user = str(ctx.author.id)
+    users = open("users.txt","r").read().split("\n")
+    for x in range(len(users)-1):
+        hosts.append(users[x].split(",")[0])
+    if user not in hosts:
+        await ctx.author.send("You are not a host of any active session.")
+        return
+    usersInSession = users[hosts.index(user)].split(",")
+    usersInSession.pop(0)
+    for x in range(len(usersInSession)-1):
+        usersInSession[x] = "<@"+usersInSession[x]+">"
+    usersInSession = "".join(usersInSession)
+    await ctx.channel.send(usersInSession+" <@"+user+"> has started the Mafia Game!")
     
+        
 bot.run(config.botToken)
