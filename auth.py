@@ -110,7 +110,7 @@ async def play(ctx):
         roleIndex = randint(0,len(roles)-1)
         players[int(usr)] = roles[roleIndex]
         recipient = await bot.fetch_user(int(usr))
-        recipient.send("You are "+players[int(usr)])
+        await recipient.send("You are "+players[int(usr)])
         roles.pop(roleIndex)
 
     
