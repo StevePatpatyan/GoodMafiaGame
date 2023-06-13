@@ -108,10 +108,18 @@ async def play(ctx):
         if usr == "":
             break
         roleIndex = randint(0,len(roles)-1)
-        players[int(usr)] = roles[roleIndex]
+        players[roles[roleIndex]] = int(usr)
         recipient = await bot.fetch_user(int(usr))
-        await recipient.send("You are "+players[int(usr)])
+        await recipient.send("You are "+roles[roleIndex])
         roles.pop(roleIndex)
+    ###############################################################################
+    await ctx.channel.send("Let us begin...")
+    while(len(players) <= 2):
+        if len(players) > 3:
+            await ctx.channel.send("Night falls upon you...")
+            
+            mafia = await bot.fetch_user((players["mafia"]))
+            
 
     
         
