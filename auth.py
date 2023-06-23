@@ -114,11 +114,66 @@ async def play(ctx):
         roles.pop(roleIndex)
     ###############################################################################
     await ctx.channel.send("Let us begin...")
-    while(len(players) <= 2):
+    while(len(players) >= 2):
         if len(players) > 3:
             await ctx.channel.send("Night falls upon you...")
-            
-            mafia = await bot.fetch_user((players["mafia"]))
+            victim = ""
+            patient = ""
+            savedSelf = False
+            while True:
+                mafia = await bot.fetch_user((players["mafia"]))
+                await mafia.send("Type the name of the person you want to kill.")
+                def check3(m):
+                    return m.author == mafia and isinstance(m.channel, discord.DMChannel)
+                victim = await bot.wait_for("message",check=check3)
+                victim = await MemberConverter().convert(ctx,victim.content)
+                victim = victim.id
+                if victim in usersInSession:
+                    if victim == players["mafia"]:
+                        await mafia.send("Your life is worth it. Don't do it.")
+                    else:
+                        break
+                else:
+                    await mafia.send("That is not a player.")
+            while True:
+                doctor = await bot.fetch_user((players["doctor"]))
+                await doctor.send("Type the name of the person you want to save.")
+                def check4(m):
+                    return m.author == doctor and isinstance(m.channel, discord.DMChannel)
+                patient = await bot.wait_for("message",check=check4)
+                patient = await MemberConverter().convert(ctx,patient.content)
+                patient = patient.id
+                if patient in usersInSession:
+                    if patient == players["doctor"]:
+                        if savedSelf:
+                            await doctor.send("Policies say you can't be selfish.")
+                        else:
+                            savedSelf = True
+                            break
+                    else:
+                        break
+                else:
+                    await doctor.send("That is not a player.")
+            while True:
+                detective = await bot.fetch_user((players["detective"]))
+                await detective.send("Type the name of the person you want to accuse.")
+                def check5(m):
+                    return m.author == detective and isinstance(m.channel, discord.DMChannel)
+                suspect = await bot.wait_for("message",check=check5)
+                suspect = await MemberConverter().convert(ctx,detective.content)
+                detective = detective.id
+                if suspect in usersInSession:
+                    if suspect == players["detective"]:
+                        await detective.send("You're obviously not the mafia... right?")
+                    else:
+                        break
+                else:
+                    await mafia.send("That is not a player.")
+
+                
+                
+
+
             
 
     
