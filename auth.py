@@ -164,7 +164,7 @@ async def play(ctx):
                 suspect = await MemberConverter().convert(ctx,detective.content)
                 suspect = suspect.id
                 detective = detective.id
-                if suspect in usersInSession:
+                if suspect in players.values():
                     if suspect == players["detective"]:
                         await detective.send("You're obviously not the mafia... right?")
                     else:
@@ -185,10 +185,15 @@ async def play(ctx):
             chosenRevival = revivals[randint(len(revivals))].replace("[VIC]", "<@" + str(suspect) + ">")
             ctx.channel.send(chosenExpo)
             sleep(7)
-            if patient == suspect:
+            if patient == victim:
                 ctx.channel.send(chosenRevival)
-
-
+            else:
+                players = {role:player for role, player in players.items() if player != victim}
+                ctx.channel.send(chosenDeath)
+            sleep(7)
+##################################################################################################################################
+            
+    
     
         
 bot.run(config.botToken)
