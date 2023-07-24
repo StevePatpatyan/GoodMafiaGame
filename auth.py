@@ -6,6 +6,7 @@ from discord.ext.commands import MemberConverter
 import os
 import config
 from random import randint
+from time import sleep
 
 
 
@@ -15,7 +16,6 @@ async def on_ready():
     print("ready")
 @bot.command()
 async def create(ctx):
-    print("h")
     user = str(ctx.author.id)
     users = "".join(open("users.txt","r").read().split("\n")).split(",")
     if user in users:
@@ -120,6 +120,7 @@ async def play(ctx):
             victim = ""
             patient = ""
             savedSelf = False
+            await ctx.channel.send("Evil doings in progress...")
             while True:
                 mafia = await bot.fetch_user((players["mafia"]))
                 await mafia.send("Type the name of the person you want to kill.")
@@ -128,7 +129,7 @@ async def play(ctx):
                 victim = await bot.wait_for("message",check=check3)
                 victim = await MemberConverter().convert(ctx,victim.content)
                 victim = victim.id
-                if victim in usersInSession:
+                if victim in players.values():
                     if victim == players["mafia"]:
                         await mafia.send("Your life is worth it. Don't do it.")
                     else:
@@ -143,7 +144,7 @@ async def play(ctx):
                 patient = await bot.wait_for("message",check=check4)
                 patient = await MemberConverter().convert(ctx,patient.content)
                 patient = patient.id
-                if patient in usersInSession:
+                if patient in players.values():
                     if patient == players["doctor"]:
                         if savedSelf:
                             await doctor.send("Policies say you can't be selfish.")
@@ -161,6 +162,7 @@ async def play(ctx):
                     return m.author == detective and isinstance(m.channel, discord.DMChannel)
                 suspect = await bot.wait_for("message",check=check5)
                 suspect = await MemberConverter().convert(ctx,detective.content)
+                suspect = suspect.id
                 detective = detective.id
                 if suspect in usersInSession:
                     if suspect == players["detective"]:
@@ -169,12 +171,23 @@ async def play(ctx):
                         break
                 else:
                     await mafia.send("That is not a player.")
+##################################################################################################################
+            for x in range(len(usersInSession)-1):
+                usersInSession[x] = "<@"+usersInSession[x]+">"
+            usersInSession = "".join(usersInSession)
+            await ctx.channel.send(usersInSession,"Wake up! There is some news!")
+            sleep(3)
+            expos = open("expositions.txt","r").read().split("\n")
+            deaths = open("deaths.txt","r").read().split("\n")
+            revivals = open("revivals.txt","r").read().split("\n")                
+            chosenExpo = expos[randint(len(expos))].replace("[VIC]", "<@" + str(suspect) + ">")
+            chosenDeath = deaths[randint(len(deaths))].replace("[VIC]", "<@" + str(suspect) + ">")
+            chosenRevival = revivals[randint(len(revivals))].replace("[VIC]", "<@" + str(suspect) + ">")
+            ctx.channel.send(chosenExpo)
+            sleep(7)
+            if patient == suspect:
+                ctx.channel.send(chosenRevival)
 
-                
-                
-
-
-            
 
     
         
