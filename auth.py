@@ -256,4 +256,8 @@ async def play(ctx):
                 players = {role:player for role, player in players if player != players[voteCount.values().index(max(voteCount.values()))]}
                 await ctx.channel.send(str(players[voteCount.values().index(max(voteCount.values()))]) + " was eliminated")
 #####################################################################################################################################################################################
+        if "mafia" not in players:
+            await ctx.channel.send("Mafia eliminated! The town has became victorious!")
+            return
+    await ctx.channel.send("Game over. The mafia was <@" + str(players["mafia"]) + ">")            
 bot.run(config.botToken)
