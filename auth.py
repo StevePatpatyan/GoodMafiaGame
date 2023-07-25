@@ -255,5 +255,5 @@ async def play(ctx):
             else:
                 players = {role:player for role, player in players if player != players[voteCount.values().index(max(voteCount.values()))]}
                 await ctx.channel.send(str(players[voteCount.values().index(max(voteCount.values()))]) + " was eliminated")
-
+#####################################################################################################################################################################################
 bot.run(config.botToken)
