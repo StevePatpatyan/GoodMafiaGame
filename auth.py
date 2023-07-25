@@ -1,4 +1,3 @@
-import rsa
 from distutils.command.check import check
 import discord
 from discord.ext import commands
@@ -7,6 +6,7 @@ import os
 import config
 from random import randint
 from time import sleep
+from emoji import demojize
 
 
 
@@ -14,6 +14,12 @@ bot = commands.Bot(command_prefix='^')
 @bot.event
 async def on_ready():
     print("ready")
+@bot.command()
+async def test(ctx):
+    msg = await ctx.channel.send("🇦")
+    sleep(5)
+    msgs = await ctx.channel.history(limit = 5).flatten()
+    print(demojize(str(msgs[0].reactions[0])))
 @bot.command()
 async def create(ctx):
     user = str(ctx.author.id)
@@ -183,17 +189,71 @@ async def play(ctx):
             chosenExpo = expos[randint(len(expos))].replace("[VIC]", "<@" + str(suspect) + ">")
             chosenDeath = deaths[randint(len(deaths))].replace("[VIC]", "<@" + str(suspect) + ">")
             chosenRevival = revivals[randint(len(revivals))].replace("[VIC]", "<@" + str(suspect) + ">")
-            ctx.channel.send(chosenExpo)
+            await ctx.channel.send(chosenExpo)
             sleep(7)
             if patient == victim:
-                ctx.channel.send(chosenRevival)
+                await ctx.channel.send(chosenRevival)
             else:
                 players = {role:player for role, player in players.items() if player != victim}
-                ctx.channel.send(chosenDeath)
+                await ctx.channel.send(chosenDeath)
             sleep(7)
 ##################################################################################################################################
-            
-    
-    
-        
+        await ctx.channel.send("Get ready to vote gang!")
+        sleep(3)
+        voteLetters = ["🇦", "🇧", "🇨", "🇩", "🇪", "🇫", "🇬", "🇭", "🇮", "🇯", "🇰", "🇱", "🇲", "🇳", "🇴", "🇵", "🇶", "🇷", "🇸", "🇹", "🇺", "🇻", "🇼", "🇽", "🇾", "🇿"]
+        voteCount = {}
+        for num in range(len(players.values())):
+            voteCount[voteLetters[num]] = 0
+            await ctx.channel.send(voteLetters[num] + ": <@" + str(players.values()[num]) + ">")
+        await ctx.channel.send("React to this message with the number of the person you suspect of being the mafia...")
+        msgs = await ctx.channel.history(limit = 200).flatten()
+        msgs = [msg for msg in msgs if msg.author.id == 1117512903315169320]
+        msg = [message for message in msgs if message.content == "React to this message with the number of the person you suspect of being the mafia..."]
+        votes = msg[0].reactions
+        while len(votes) < len(players):
+            msgs = await ctx.channel.history(limit = 200).flatten()
+            msgs = [msg for msg in msgs if msg.author.id == 1117512903315169320]
+            msg = [message for message in msgs if message.content == "React to this message with the number of the person you suspect of being the mafia..."]
+            votes = msg[0].reactions
+        for vote in votes:
+            if demojize(vote) in voteCount:
+                voteCount[demojize(vote)] += 1
+        if voteCount.values().count(voteCount.values()[0]) == len(voteCount.values()):
+            await ctx.channel.send("Vote tied evenly... Nobody was eliminated.")
+            sleep(2)
+        else:
+            for vote in voteCount.values():
+                tiebreakers = []
+                if voteCount.values().count(vote) > 1:
+                    tiebreakers.append(vote)
+            if len(tiebreakers) > 0:    
+                subPlayers = [players[x] for x in range(len(players.values())) if voteCount.values()[x] == max(tiebreakers)]
+                await ctx.channel.send("Tiebreaker vote!")
+                sleep(2)
+                voteCount = {}
+                for num in range(len(players.values())):
+                    voteCount[voteLetters[num]] = 0
+                    await ctx.channel.send(voteLetters[num] + ": <@" + str(subPlayers.values()[num]) + ">")
+                await ctx.channel.send("React to this message with the number of the person you suspect of being the mafia...")
+                msgs = await ctx.channel.history(limit = 200).flatten()
+                msgs = [msg for msg in msgs if msg.author.id == 1117512903315169320]
+                msg = [message for message in msgs if message.content == "React to this message with the number of the person you suspect of being the mafia..."]
+                votes = msg[0].reactions
+                while len(votes) < len(subPlayers):
+                    msgs = await ctx.channel.history(limit = 200).flatten()
+                    msgs = [msg for msg in msgs if msg.author.id == 1117512903315169320]
+                    msg = [message for message in msgs if message.content == "React to this message with the number of the person you suspect of being the mafia..."]
+                    votes = msg[0].reactions
+                for vote in votes:
+                    if demojize(vote) in voteCount:
+                        voteCount[demojize(vote)] += 1
+                if votes.count(votes[0]) == len(votes):
+                    await ctx.channel.send("Vote tied evenly... Nobody was eliminated.")
+                else:
+                    players = {role:player for role, player in players if player != subPlayers[voteCount.values().index(max(voteCount.values()))]}
+                    await ctx.channel.send(str(subPlayers[voteCount.values().index(max(voteCount.values()))]) + " was eliminated")
+            else:
+                players = {role:player for role, player in players if player != players[voteCount.values().index(max(voteCount.values()))]}
+                await ctx.channel.send(str(players[voteCount.values().index(max(voteCount.values()))]) + " was eliminated")
+
 bot.run(config.botToken)
