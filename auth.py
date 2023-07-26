@@ -259,5 +259,18 @@ async def play(ctx):
         if "mafia" not in players:
             await ctx.channel.send("Mafia eliminated! The town has became victorious!")
             return
-    await ctx.channel.send("Game over. The mafia was <@" + str(players["mafia"]) + ">")            
+    await ctx.channel.send("Game over. The mafia was <@" + str(players["mafia"]) + ">")
+
+@bot.command()
+async def leave(ctx):
+    with open("users.txt") as usersFile:
+        users = usersFile.read().split("\n")
+        for x in range(users):
+            group = users[x]
+            if str(ctx.author.id) in group:
+                group.remove(str(ctx.author.id))
+                users[x] = group
+    with open("users.txt", "w") as userFile:
+        userFile.write("\n".join(users))
+                
 bot.run(config.botToken)
