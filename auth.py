@@ -263,14 +263,20 @@ async def play(ctx):
 
 @bot.command()
 async def leave(ctx):
-    with open("users.txt") as usersFile:
+    with open("users.txt", "w+") as usersFile:
         users = usersFile.read().split("\n")
         for x in range(users):
-            group = users[x]
+            group = users[x].split(",")
             if str(ctx.author.id) in group:
                 group.remove(str(ctx.author.id))
-                users[x] = group
-    with open("users.txt", "w") as userFile:
-        userFile.write("\n".join(users))
-                
+                users[x] = ",".join(group)
+                usersFile.write("\n".join(users))
+                await ctx.channel.send("<@" + str(ctx.author.id) + "> you successfully left <@" + str(group[x]) + "'s session.")
+                return
+    await ctx.channel.send("<@" + str(ctx.author.id) + "> you are not in a session.")
+
+        
+
+@bot.command()
+async def shutdown(ctx):
 bot.run(config.botToken)
