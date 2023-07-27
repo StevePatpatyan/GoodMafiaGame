@@ -286,7 +286,12 @@ async def shutdown(ctx):
             if str(ctx.author.id) in group[0]:
                 users.remove(users[x])
                 usersFile.write("\n".join(users))
+                with open("passwords.txt", "w+") as passFile:
+                    passwords = passFile.read().split("\n")
+                    passwords.remove(passwords[x])
+                    passFile.write("\n".join(passwords))
                 await ctx.channel.send("<@" + str(ctx.author.id) + "> you successfully ended your session.")
                 return
     await ctx.channel.send("<@" + str(ctx.author.id) + "> you are not the host of a session.")
+    
 bot.run(config.botToken)
