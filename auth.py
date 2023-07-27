@@ -290,7 +290,7 @@ async def leave(ctx):
 async def shutdown(ctx):
     with open("users.txt", "r") as usersFile:
         users = usersFile.read().split("\n")
-    for x in range(users):
+    for x in range(len(users)):
         group = users[x].split(",")
         if str(ctx.author.id) in group[0]:
             users.remove(users[x])
