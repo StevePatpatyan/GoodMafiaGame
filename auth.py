@@ -263,15 +263,16 @@ async def play(ctx):
 
 @bot.command()
 async def leave(ctx):
-    with open("users.txt", "w+") as usersFile:
+    with open("users.txt", "r") as usersFile:
         users = usersFile.read().split("\n")
         for x in range(len(users)):
             group = users[x].split(",")
             if str(ctx.author.id) in group:
                 group.remove(str(ctx.author.id))
                 users[x] = ",".join(group)
-                usersFile.write("\n".join(users))
-                await ctx.channel.send("<@" + str(ctx.author.id) + "> you successfully left <@" + str(group[0]) + "'s session.")
+                with open("users.txt", "w") as usersFile:
+                    usersFile.write("\n".join(users))
+                await ctx.channel.send("<@" + str(ctx.author.id) + "> you successfully left <@" + str(group[0]) + ">'s session.")
                 return
     await ctx.channel.send("<@" + str(ctx.author.id) + "> you are not in a session.")
 
@@ -279,19 +280,21 @@ async def leave(ctx):
 
 @bot.command()
 async def shutdown(ctx):
-    with open("users.txt", "w+") as usersFile:
+    with open("users.txt", "r") as usersFile:
         users = usersFile.read().split("\n")
-        for x in range(users):
-            group = users[x].split(",")
-            if str(ctx.author.id) in group[0]:
-                users.remove(users[x])
+    for x in range(users):
+        group = users[x].split(",")
+        if str(ctx.author.id) in group[0]:
+            users.remove(users[x])
+            with open("users.txt", "w") as usersFile:
                 usersFile.write("\n".join(users))
-                with open("passwords.txt", "w+") as passFile:
-                    passwords = passFile.read().split("\n")
-                    passwords.remove(passwords[x])
-                    passFile.write("\n".join(passwords))
-                await ctx.channel.send("<@" + str(ctx.author.id) + "> you successfully ended your session.")
-                return
+            with open("passwords.txt", "r") as passFile:
+                passwords = passFile.read().split("\n")
+                passwords.remove(passwords[x])
+            with open("passwords.txt", "w") as passFile:
+                passFile.write("\n".join(passwords))
+            await ctx.channel.send("<@" + str(ctx.author.id) + "> you successfully ended your session.")
+            return
     await ctx.channel.send("<@" + str(ctx.author.id) + "> you are not the host of a session.")
     
 bot.run(config.botToken)
