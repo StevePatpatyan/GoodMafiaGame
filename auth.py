@@ -265,7 +265,7 @@ async def play(ctx):
 async def leave(ctx):
     with open("users.txt", "w+") as usersFile:
         users = usersFile.read().split("\n")
-        for x in range(users):
+        for x in range(len(users)):
             group = users[x].split(",")
             if str(ctx.author.id) in group:
                 group.remove(str(ctx.author.id))
