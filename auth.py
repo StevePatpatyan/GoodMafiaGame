@@ -193,7 +193,7 @@ async def play(ctx):
             for x in range(len(usersInSession)-1):
                 usersInSession[x] = "<@"+usersInSession[x]+">"
             usersInSession = "".join(usersInSession)
-            await ctx.channel.send(usersInSession,"Wake up! There is some news!")
+            await ctx.channel.send(usersInSession + " Wake up! There is some news!")
             sleep(3)
             expos = open("expositions.txt","r").read().split("\n")
             deaths = open("deaths.txt","r").read().split("\n")
