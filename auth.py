@@ -133,7 +133,11 @@ async def play(ctx):
                 def check3(m):
                     return m.author == mafia and isinstance(m.channel, discord.DMChannel)
                 victim = await bot.wait_for("message",check=check3)
-                victim = await MemberConverter().convert(ctx,victim.content)
+                try:
+                    victim = await MemberConverter().convert(ctx,victim.content)
+                except:
+                    await ctx.channel.send("That is not an account. Try typing the exact username of the player.")
+                    continue
                 victim = victim.id
                 if victim in players.values():
                     if victim == players["mafia"]:
@@ -148,7 +152,11 @@ async def play(ctx):
                 def check4(m):
                     return m.author == doctor and isinstance(m.channel, discord.DMChannel)
                 patient = await bot.wait_for("message",check=check4)
-                patient = await MemberConverter().convert(ctx,patient.content)
+                try:
+                    patient = await MemberConverter().convert(ctx,patient.content)
+                except:
+                    await ctx.channel.send("That is not an account. Try typing the exact username of the player.")
+                    continue
                 patient = patient.id
                 if patient in players.values():
                     if patient == players["doctor"]:
@@ -167,7 +175,11 @@ async def play(ctx):
                 def check5(m):
                     return m.author == detective and isinstance(m.channel, discord.DMChannel)
                 suspect = await bot.wait_for("message",check=check5)
-                suspect = await MemberConverter().convert(ctx,detective.content)
+                try:
+                    suspect = await MemberConverter().convert(ctx,suspect.content)
+                except:
+                    await ctx.channel.send("That is not an account. Try typing the exact username of the player.")
+                    continue
                 suspect = suspect.id
                 detective = detective.id
                 if suspect in players.values():
