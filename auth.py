@@ -136,7 +136,7 @@ async def play(ctx):
                 try:
                     victim = await MemberConverter().convert(ctx,victim.content)
                 except:
-                    await ctx.channel.send("That is not an account. Try typing the exact username of the player.")
+                    await mafia.send("That is not an account. Try typing the exact username of the player.")
                     continue
                 victim = victim.id
                 if victim in players.values():
@@ -155,7 +155,7 @@ async def play(ctx):
                 try:
                     patient = await MemberConverter().convert(ctx,patient.content)
                 except:
-                    await ctx.channel.send("That is not an account. Try typing the exact username of the player.")
+                    await doctor.send("That is not an account. Try typing the exact username of the player.")
                     continue
                 patient = patient.id
                 if patient in players.values():
@@ -178,7 +178,7 @@ async def play(ctx):
                 try:
                     suspect = await MemberConverter().convert(ctx,suspect.content)
                 except:
-                    await ctx.channel.send("That is not an account. Try typing the exact username of the player.")
+                    await detective.send("That is not an account. Try typing the exact username of the player.")
                     continue
                 suspect = suspect.id
                 detective = detective.id
