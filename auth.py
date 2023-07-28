@@ -51,12 +51,15 @@ async def join(ctx):
     if len(users) <= 1:
         await ctx.author.send("There are no active sessions.")
         return
-    for usr in users:
-        usersPerSession = usr.split(",")
-        for x in range(len(usersPerSession)-1):
-            player = await bot.fetch_user(int(usersPerSession[x]))
+    for x in range(len(users) - 1):
+        usersPerSession = users[x].split(",")
+        listOfSessions+="**"+str((x+1))+"**: "
+        for usr in usersPerSession:
+            if usr == "":
+                break
+            player = await bot.fetch_user(int(usr))
             player = player.name
-            listOfSessions+="**"+str((x+1))+"**: "+player+", "
+            listOfSessions+= player+", "
         listOfSessions+="\n"
     await ctx.author.send(listOfSessions)
     await ctx.author.send("Select an active session to join by typing the number of the session.")
@@ -64,7 +67,7 @@ async def join(ctx):
         return m.author==ctx.author and isinstance(m.channel, discord.DMChannel) and m.content.isdigit()
     response = await bot.wait_for("message",check = check)
     response = int(response.content)
-    if response <= 0 or response > len(users):
+    if response <= 0 or response > len(users) - 1:
         await ctx.author.send("The session number you entered is invalid.")
         return
     password = open("passwords.txt","r").read().split("\n")[response-1]
@@ -123,6 +126,7 @@ async def play(ctx):
     while(len(players) >= 2):
         if len(players) > 3:
             await ctx.channel.send("Night falls upon you...")
+            sleep(2)
             victim = ""
             patient = ""
             savedSelf = False
@@ -143,6 +147,7 @@ async def play(ctx):
                     if victim == players["mafia"]:
                         await mafia.send("Your life is worth it. Don't do it.")
                     else:
+                        await ctx.channel.send("Target locked...")
                         break
                 else:
                     await mafia.send("That is not a player.")
@@ -164,8 +169,10 @@ async def play(ctx):
                             await doctor.send("Policies say you can't be selfish.")
                         else:
                             savedSelf = True
+                            await ctx.channel.send("Using epipen...")
                             break
                     else:
+                        await ctx.channel.send("Sending supply drop...")
                         break
                 else:
                     await doctor.send("That is not a player.")
@@ -186,6 +193,12 @@ async def play(ctx):
                     if suspect == players["detective"]:
                         await detective.send("You're obviously not the mafia... right?")
                     else:
+                        await ctx.channel.send("Gathering intel...")
+                        sleep(1)
+                        if suspect == players["mafia"]:
+                            await ctx.channel.send("Mafia found!")
+                        else:
+                            await ctx.channel.send("Results say no.")
                         break
                 else:
                     await mafia.send("That is not a player.")
