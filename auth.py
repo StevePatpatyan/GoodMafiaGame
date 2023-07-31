@@ -191,6 +191,7 @@ async def play(ctx):
                 detective = detective.id
                 if suspect in players.values():
                     if suspect == players["detective"]:
+                        detective = await bot.fetch_user((players["detective"]))
                         await detective.send("You're obviously not the mafia... right?")
                     else:
                         await ctx.channel.send("Gathering intel...")
