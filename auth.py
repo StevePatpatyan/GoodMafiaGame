@@ -213,9 +213,9 @@ async def play(ctx):
             expos = open("expositions.txt","r").read().split("\n")
             deaths = open("deaths.txt","r").read().split("\n")
             revivals = open("revivals.txt","r").read().split("\n")                
-            chosenExpo = expos[randint(len(expos))].replace("[VIC]", "<@" + str(suspect) + ">")
-            chosenDeath = deaths[randint(len(deaths))].replace("[VIC]", "<@" + str(suspect) + ">")
-            chosenRevival = revivals[randint(len(revivals))].replace("[VIC]", "<@" + str(suspect) + ">")
+            chosenExpo = expos[randint(0,len(expos))].replace("[VIC]", "<@" + str(suspect) + ">")
+            chosenDeath = deaths[randint(0,len(deaths))].replace("[VIC]", "<@" + str(suspect) + ">")
+            chosenRevival = revivals[randint(0,len(revivals))].replace("[VIC]", "<@" + str(suspect) + ">")
             await ctx.channel.send(chosenExpo)
             sleep(7)
             if patient == victim:
