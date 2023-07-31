@@ -98,7 +98,7 @@ async def play(ctx):
         await ctx.author.send("You are not a host of any active session.")
         return
     usersInSession = users[hosts.index(user)].split(",")
-    if len(usersInSession) <= 4:
+    if len(usersInSession) <=3: #4:
         await ctx.channel.send("There are not enough players to begin.")
         return
     usersInSession.pop(0)
@@ -108,7 +108,7 @@ async def play(ctx):
     await ctx.channel.send(usersInSession+" <@"+user+"> has started the Mafia Game!")
     #################################################################################
     usersInSession = users[hosts.index(user)].split(",")
-    roles = ["mafia","doctor","detective","townperson"]
+    roles = ["mafia","doctor","detective"]#,"townperson"]
     players = {}
     for x in range(len(usersInSession)-1-4):
         roles.append("townsperson")
@@ -237,24 +237,25 @@ async def play(ctx):
         msgs = [msg for msg in msgs if msg.author.id == 1117512903315169320]
         msg = [message for message in msgs if message.content == "React to this message with the number of the person you suspect of being the mafia..."]
         votes = msg[0].reactions
-        while len(votes) < len(players):
+        while sum(voteCount.values()) < len(players):
             msgs = await ctx.channel.history(limit = 200).flatten()
             msgs = [msg for msg in msgs if msg.author.id == 1117512903315169320]
             msg = [message for message in msgs if message.content == "React to this message with the number of the person you suspect of being the mafia..."]
             votes = msg[0].reactions
-        for vote in votes:
-            if demojize(vote) in voteCount:
-                voteCount[demojize(vote)] += 1
-        if voteCount.values().count(voteCount.values()[0]) == len(voteCount.values()):
+            for vote in votes:
+                if vote.emoji in voteCount:
+                    voteCount[vote.emoji] = vote.count
+        if list(voteCount.values()).count(list(voteCount.values())[0]) == len(list(voteCount.values())):
             await ctx.channel.send("Vote tied evenly... Nobody was eliminated.")
             sleep(2)
         else:
+            subPlayers = [list(players.values())[x] for x in range(len(players.values()))]
             for vote in voteCount.values():
                 tiebreakers = []
-                if voteCount.values().count(vote) > 1:
-                    tiebreakers.append(vote)
-            if len(tiebreakers) > 0:    
-                subPlayers = [players[x] for x in range(len(players.values())) if voteCount.values()[x] == max(tiebreakers)]
+                if list(voteCount.values()).count(vote) > 1 and vote > max(list(voteCount.values())):
+                    tiebreakers = vote
+            if tiebreakers == 0:    
+                subPlayers = [list(players.values())[x] for x in range(len(players.values())) if list(voteCount.values())[x] == tiebreakers]
                 await ctx.channel.send("Tiebreaker vote!")
                 sleep(2)
                 voteCount = {}
@@ -266,22 +267,22 @@ async def play(ctx):
                 msgs = [msg for msg in msgs if msg.author.id == 1117512903315169320]
                 msg = [message for message in msgs if message.content == "React to this message with the number of the person you suspect of being the mafia..."]
                 votes = msg[0].reactions
-                while len(votes) < len(subPlayers):
+                while sum(list(voteCount.values())) < len(subPlayers):
                     msgs = await ctx.channel.history(limit = 200).flatten()
                     msgs = [msg for msg in msgs if msg.author.id == 1117512903315169320]
                     msg = [message for message in msgs if message.content == "React to this message with the number of the person you suspect of being the mafia..."]
                     votes = msg[0].reactions
                 for vote in votes:
-                    if demojize(vote) in voteCount:
-                        voteCount[demojize(vote)] += 1
-                if votes.count(votes[0]) == len(votes):
+                    if vote.emoji in voteCount:
+                        voteCount[vote.emoji] = vote.count
+                if list(voteCount.values()).count(list(voteCount.values())[0]) == len(votes):
                     await ctx.channel.send("Vote tied evenly... Nobody was eliminated.")
                 else:
-                    players = {role:player for role, player in players if player != subPlayers[voteCount.values().index(max(voteCount.values()))]}
-                    await ctx.channel.send(str(subPlayers[voteCount.values().index(max(voteCount.values()))]) + " was eliminated")
+                    players = {role:player for role, player in players.items() if player != subPlayers[voteCount.values().index(max(voteCount.values()))]}
+                    await ctx.channel.send("<@" + str(subPlayers[list(voteCount.values()).index(max(list(voteCount.values())))]) + "> was eliminated")
             else:
-                players = {role:player for role, player in players if player != players[voteCount.values().index(max(voteCount.values()))]}
-                await ctx.channel.send(str(players[voteCount.values().index(max(voteCount.values()))]) + " was eliminated")
+                players = {role:player for role, player in players.items() if player != subPlayers[list(voteCount.values()).index(max(list(voteCount.values())))]}
+                await ctx.channel.send("<@" + str(subPlayers[list(voteCount.values()).index(max(list(voteCount.values())))]) + "> was eliminated")
 #####################################################################################################################################################################################
         if "mafia" not in players:
             await ctx.channel.send("Mafia eliminated! The town has became victorious!")
