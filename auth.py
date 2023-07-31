@@ -195,6 +195,7 @@ async def play(ctx):
                     else:
                         await ctx.channel.send("Gathering intel...")
                         sleep(1)
+                        detective = await bot.fetch_user((players["detective"]))
                         if suspect == players["mafia"]:
                             await detective.send("Mafia found!")
                         else:
