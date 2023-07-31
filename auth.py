@@ -196,9 +196,9 @@ async def play(ctx):
                         await ctx.channel.send("Gathering intel...")
                         sleep(1)
                         if suspect == players["mafia"]:
-                            await ctx.channel.send("Mafia found!")
+                            await detective.send("Mafia found!")
                         else:
-                            await ctx.channel.send("Results say no.")
+                            await detective.send("Results say no.")
                         break
                 else:
                     await mafia.send("That is not a player.")
