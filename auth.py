@@ -231,7 +231,7 @@ async def play(ctx):
         voteCount = {}
         for num in range(len(players.values())):
             voteCount[voteLetters[num]] = 0
-            await ctx.channel.send(voteLetters[num] + ": <@" + str(list(players.values()[num])) + ">")
+            await ctx.channel.send(voteLetters[num] + ": <@" + str(list(players.values())[num]) + ">")
         await ctx.channel.send("React to this message with the number of the person you suspect of being the mafia...")
         msgs = await ctx.channel.history(limit = 200).flatten()
         msgs = [msg for msg in msgs if msg.author.id == 1117512903315169320]
