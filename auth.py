@@ -213,9 +213,9 @@ async def play(ctx):
             expos = open("expositions.txt","r").read().split("\n")
             deaths = open("deaths.txt","r").read().split("\n")
             revivals = open("revivals.txt","r").read().split("\n")                
-            chosenExpo = expos[randint(0,len(expos))].replace("[VIC]", "<@" + str(suspect) + ">")
-            chosenDeath = deaths[randint(0,len(deaths))].replace("[VIC]", "<@" + str(suspect) + ">")
-            chosenRevival = revivals[randint(0,len(revivals))].replace("[VIC]", "<@" + str(suspect) + ">")
+            chosenExpo = expos[randint(0,len(expos))].replace("[VIC]", "<@" + str(victim) + ">")
+            chosenDeath = deaths[randint(0,len(deaths))].replace("[VIC]", "<@" + str(victim) + ">")
+            chosenRevival = revivals[randint(0,len(revivals))].replace("[VIC]", "<@" + str(victim) + ">")
             await ctx.channel.send(chosenExpo)
             sleep(7)
             if patient == victim:
@@ -231,7 +231,7 @@ async def play(ctx):
         voteCount = {}
         for num in range(len(players.values())):
             voteCount[voteLetters[num]] = 0
-            await ctx.channel.send(voteLetters[num] + ": <@" + str(players.values()[num]) + ">")
+            await ctx.channel.send(voteLetters[num] + ": <@" + str(list(players.values()[num])) + ">")
         await ctx.channel.send("React to this message with the number of the person you suspect of being the mafia...")
         msgs = await ctx.channel.history(limit = 200).flatten()
         msgs = [msg for msg in msgs if msg.author.id == 1117512903315169320]
