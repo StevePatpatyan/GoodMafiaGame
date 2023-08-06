@@ -6,7 +6,7 @@ import os
 import config
 from random import randint
 from time import sleep
-from emoji import demojize
+from time import time
 
 
 
@@ -14,12 +14,8 @@ bot = commands.Bot(command_prefix='^')
 @bot.event
 async def on_ready():
     print("ready")
-@bot.command()
-async def test(ctx):
-    msg = await ctx.channel.send("🇦")
-    sleep(5)
-    msgs = await ctx.channel.history(limit = 5).flatten()
-    print(demojize(str(msgs[0].reactions[0])))
+#@bot.command()
+#async def test(ctx):
 @bot.command()
 async def create(ctx):
     user = str(ctx.author.id)
@@ -131,8 +127,15 @@ async def play(ctx):
             patient = ""
             savedSelf = False
             await ctx.channel.send("Evil doings in progress...")
+            listOfUsers = []
+            for player in players.values():
+                if player["mafia"] != player:
+                    player = await bot.fetch_user(player)
+                    listOfUsers.append(player.name)
+            listOfUsers = ",".join(listOfUsers)
             while True:
                 mafia = await bot.fetch_user((players["mafia"]))
+                await mafia.send(listOfUsers)
                 await mafia.send("Type the name of the person you want to kill.")
                 def check3(m):
                     return m.author == mafia and isinstance(m.channel, discord.DMChannel)
@@ -151,8 +154,14 @@ async def play(ctx):
                         break
                 else:
                     await mafia.send("That is not a player.")
+            listOfUsers = listOfUsers.split(",")
+            listOfUsers.append(bot.fetch_user(players["mafia"]).name)
+            if savedSelf:
+                listOfUsers.remove(bot.fetch_user(players["doctor"]).name)
+            listOfUsers = ",".join(listOfUsers)
             while True:
                 doctor = await bot.fetch_user((players["doctor"]))
+                await doctor.send(listOfUsers)
                 await doctor.send("Type the name of the person you want to save.")
                 def check4(m):
                     return m.author == doctor and isinstance(m.channel, discord.DMChannel)
@@ -176,8 +185,13 @@ async def play(ctx):
                         break
                 else:
                     await doctor.send("That is not a player.")
+            listOfUsers = listOfUsers.split(",")
+            if savedSelf and "doctor" in players:
+                listOfUsers.append(bot.fetch_user(players["doctor"]).name)
+            listOfUsers = ",".join(listOfUsers)
             while True:
                 detective = await bot.fetch_user((players["detective"]))
+                await detective.send(listOfUsers)
                 await detective.send("Type the name of the person you want to accuse.")
                 def check5(m):
                     return m.author == detective and isinstance(m.channel, discord.DMChannel)
@@ -227,55 +241,64 @@ async def play(ctx):
 ##################################################################################################################################
         await ctx.channel.send("Get ready to vote gang!")
         sleep(3)
-        voteLetters = ["🇦", "🇧", "🇨", "🇩", "🇪", "🇫", "🇬", "🇭", "🇮", "🇯", "🇰", "🇱", "🇲", "🇳", "🇴", "🇵", "🇶", "🇷", "🇸", "🇹", "🇺", "🇻", "🇼", "🇽", "🇾", "🇿"]
+        def voteCheck(m):
+            return m.author.id in players.values()
         voteCount = {}
-        for num in range(len(players.values())):
-            voteCount[voteLetters[num]] = 0
-            await ctx.channel.send(voteLetters[num] + ": <@" + str(list(players.values())[num]) + ">")
-        await ctx.channel.send("React to this message with the number of the person you suspect of being the mafia...")
-        msgs = await ctx.channel.history(limit = 200).flatten()
-        msgs = [msg for msg in msgs if msg.author.id == 1117512903315169320]
-        msg = [message for message in msgs if message.content == "React to this message with the number of the person you suspect of being the mafia..."]
-        votes = msg[0].reactions
-        while sum(voteCount.values()) < len(players):
-            msgs = await ctx.channel.history(limit = 200).flatten()
-            msgs = [msg for msg in msgs if msg.author.id == 1117512903315169320]
-            msg = [message for message in msgs if message.content == "React to this message with the number of the person you suspect of being the mafia..."]
-            votes = msg[0].reactions
-            for vote in votes:
-                if vote.emoji in voteCount:
-                    voteCount[vote.emoji] = vote.count
+        whoVotedFor = {player : 0 for player in players.values()}
+        for player in players.values():
+            timeout = time() + 30
+            voteCount[player] = 0
+            await ctx.channel.send("All in favor of voting for <@" + str(player) + "> say 'aye' and 'no' to take back your vote. 30 seconds to vote")
+            while time() <= timeout:
+                try:
+                    voteMsg = await bot.wait_for("message", check = voteCheck, timeout=5)
+                except:
+                    continue
+                if voteMsg.content.lower() == 'aye' and whoVotedFor[voteMsg.author.id] == 0:
+                    whoVotedFor[voteMsg.author.id] = player
+                    voteCount[player] += 1
+                    await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You successfully voted.")
+                elif voteMsg.content.lower() == 'aye' and whoVotedFor[voteMsg.author.id] != 0:
+                    await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You already voted.")
+                if voteMsg.content.lower() == 'no' and whoVotedFor[voteMsg.author.id] == 0:
+                    await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You haven't voted yet.")
+                elif voteMsg.content.lower() == 'no' and whoVotedFor[voteMsg.author.id] != 0:
+                    voteCount[whoVotedFor[voteMsg.author.id]] -= 1
+                    whoVotedFor[voteMsg.author.id] = 0
+                    await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You took away your vote.")
         if list(voteCount.values()).count(list(voteCount.values())[0]) == len(list(voteCount.values())):
             await ctx.channel.send("Vote tied evenly... Nobody was eliminated.")
             sleep(2)
         else:
             subPlayers = [list(players.values())[x] for x in range(len(players.values()))]
             for vote in voteCount.values():
-                tiebreakers = []
+                tiebreakers = 0
                 if list(voteCount.values()).count(vote) > 1 and vote > max(list(voteCount.values())):
                     tiebreakers = vote
-            if tiebreakers == 0:    
-                subPlayers = [list(players.values())[x] for x in range(len(players.values())) if list(voteCount.values())[x] == tiebreakers]
+            if tiebreakers != 0:    
+                subPlayers = [player for player in players.values() if voteCount[player] == tiebreakers]
                 await ctx.channel.send("Tiebreaker vote!")
                 sleep(2)
                 voteCount = {}
-                for num in range(len(players.values())):
-                    voteCount[voteLetters[num]] = 0
-                    await ctx.channel.send(voteLetters[num] + ": <@" + str(subPlayers.values()[num]) + ">")
-                await ctx.channel.send("React to this message with the number of the person you suspect of being the mafia...")
-                msgs = await ctx.channel.history(limit = 200).flatten()
-                msgs = [msg for msg in msgs if msg.author.id == 1117512903315169320]
-                msg = [message for message in msgs if message.content == "React to this message with the number of the person you suspect of being the mafia..."]
-                votes = msg[0].reactions
-                while sum(list(voteCount.values())) < len(subPlayers):
-                    msgs = await ctx.channel.history(limit = 200).flatten()
-                    msgs = [msg for msg in msgs if msg.author.id == 1117512903315169320]
-                    msg = [message for message in msgs if message.content == "React to this message with the number of the person you suspect of being the mafia..."]
-                    votes = msg[0].reactions
-                for vote in votes:
-                    if vote.emoji in voteCount:
-                        voteCount[vote.emoji] = vote.count
-                if list(voteCount.values()).count(list(voteCount.values())[0]) == len(votes):
+                for player in subPlayers:
+                    timeout = time() + 30
+                    voteCount[player] = 0
+                    await ctx.channel.send("All in favor of voting for <@" + str(player) + "> say 'aye' and 'no' to take back your vote. 30 seconds to vote")
+                    while time() <= timeout:
+                        voteMsg = await bot.wait_for("message", check = voteCheck)
+                        if voteMsg.content.lower() == 'aye' and whoVotedFor[voteMsg.author.id] == 0:
+                            whoVotedFor[voteMsg.author.id] = player
+                            voteCount[player] += 1
+                            await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You successfully voted.")
+                        elif voteMsg.content.lower() == 'aye' and whoVotedFor[voteMsg.author.id] != 0:
+                            await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You already voted.")
+                        if voteMsg.content.lower() == 'no' and whoVotedFor[voteMsg.author.id] == 0:
+                            await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You haven't voted yet.")
+                        elif voteMsg.content.lower() == 'no' and whoVotedFor[voteMsg.author.id] != 0:
+                            voteCount[whoVotedFor[voteMsg.author.id]] -= 1
+                            whoVotedFor[voteMsg.author.id] = 0
+                            await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You took away your vote.")
+                if list(voteCount.values()).count(list(voteCount.values())[0]) == len(voteCount):
                     await ctx.channel.send("Vote tied evenly... Nobody was eliminated.")
                 else:
                     players = {role:player for role, player in players.items() if player != subPlayers[voteCount.values().index(max(voteCount.values()))]}
