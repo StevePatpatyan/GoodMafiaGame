@@ -7,15 +7,17 @@ import config
 from random import randint
 from time import sleep
 from time import time
-
+import csv
 
 
 bot = commands.Bot(command_prefix='^')
 @bot.event
 async def on_ready():
     print("ready")
-#@bot.command()
-#async def test(ctx):
+@bot.command()
+async def test(ctx):
+    with open("nicknames.csv", "w", newline='') as file:
+        writer = csv.DictWriter(file, ['id','nickname'])
 @bot.command()
 async def create(ctx):
     user = str(ctx.author.id)
@@ -355,5 +357,3 @@ async def shutdown(ctx):
             await ctx.channel.send("<@" + str(ctx.author.id) + "> you successfully ended your session.")
             return
     await ctx.channel.send("<@" + str(ctx.author.id) + "> you are not the host of a session.")
-    
-bot.run(config.botToken)
