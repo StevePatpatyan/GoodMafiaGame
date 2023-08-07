@@ -114,7 +114,7 @@ async def play(ctx):
             players["mafia"] = int(usr)
             recipient = await bot.fetch_user(int(usr))
             await recipient.send("You are mafia")
-            roles.pop("mafia")
+            roles.pop(0)
         else:
             roleIndex = randint(0,len(roles)-1)
             players[roles[roleIndex]] = int(usr)
