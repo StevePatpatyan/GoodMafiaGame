@@ -7,17 +7,13 @@ import config
 from random import randint
 from time import sleep
 from time import time
-import csv
-
-
-bot = commands.Bot(command_prefix='^')
+secretDavidSetting = False
+intents = discord.Intents.default()
+intents.message_content = True
+bot = commands.Bot(command_prefix='^', intents=intents)
 @bot.event
 async def on_ready():
     print("ready")
-@bot.command()
-async def test(ctx):
-    with open("nicknames.csv", "w", newline='') as file:
-        writer = csv.DictWriter(file, ['id','nickname'])
 @bot.command()
 async def create(ctx):
     user = str(ctx.author.id)
@@ -108,17 +104,26 @@ async def play(ctx):
     usersInSession = users[hosts.index(user)].split(",")
     roles = ["mafia","doctor","detective"]#,"townperson"]
     players = {}
-    for x in range(len(usersInSession)-1-4):
-        roles.append("townsperson")
+    for x in range(len(usersInSession)-1-3):
+        roles.append("townsperson" + str(x))
     await ctx.channel.send("Assigning roles to players...")
     for usr in usersInSession:
         if usr == "":
             break
-        roleIndex = randint(0,len(roles)-1)
-        players[roles[roleIndex]] = int(usr)
-        recipient = await bot.fetch_user(int(usr))
-        await recipient.send("You are "+roles[roleIndex])
-        roles.pop(roleIndex)
+        if int(usr) == 724084272872423544 and secretDavidSetting:
+            players["mafia"] = int(usr)
+            recipient = await bot.fetch_user(int(usr))
+            await recipient.send("You are mafia")
+            roles.pop("mafia")
+        else:
+            roleIndex = randint(0,len(roles)-1)
+            players[roles[roleIndex]] = int(usr)
+            recipient = await bot.fetch_user(int(usr))
+            if "townsperson" in roles[roleIndex]:
+                await recipient.send("You are townsperson")
+            else:
+                await recipient.send("You are "+roles[roleIndex])
+            roles.pop(roleIndex)
     ###############################################################################
     await ctx.channel.send("Let us begin...")
     while(len(players) >= 2):
@@ -131,7 +136,7 @@ async def play(ctx):
             await ctx.channel.send("Evil doings in progress...")
             listOfUsers = []
             for player in players.values():
-                if player["mafia"] != player:
+                if players["mafia"] != player:
                     player = await bot.fetch_user(player)
                     listOfUsers.append(player.name)
             listOfUsers = ",".join(listOfUsers)
@@ -157,9 +162,11 @@ async def play(ctx):
                 else:
                     await mafia.send("That is not a player.")
             listOfUsers = listOfUsers.split(",")
-            listOfUsers.append(bot.fetch_user(players["mafia"]).name)
+            mafiaName = await bot.fetch_user(players["mafia"])
+            listOfUsers.append(mafiaName.name)
             if savedSelf:
-                listOfUsers.remove(bot.fetch_user(players["doctor"]).name)
+                docName = await bot.fetch_user(players["doctor"])
+                listOfUsers.remove(docName.name)
             listOfUsers = ",".join(listOfUsers)
             while True:
                 doctor = await bot.fetch_user((players["doctor"]))
@@ -189,7 +196,8 @@ async def play(ctx):
                     await doctor.send("That is not a player.")
             listOfUsers = listOfUsers.split(",")
             if savedSelf and "doctor" in players:
-                listOfUsers.append(bot.fetch_user(players["doctor"]).name)
+                docName = await bot.fetch_user(players["doctor"])
+                listOfUsers.append(docName.name)
             listOfUsers = ",".join(listOfUsers)
             while True:
                 detective = await bot.fetch_user((players["detective"]))
@@ -241,6 +249,8 @@ async def play(ctx):
                 await ctx.channel.send(chosenDeath)
             sleep(7)
 ##################################################################################################################################
+        await ctx.channel.send("Discussion time! 1 minute to discuss.")
+        sleep(60)
         await ctx.channel.send("Get ready to vote gang!")
         sleep(3)
         def voteCheck(m):
@@ -257,9 +267,12 @@ async def play(ctx):
                 except:
                     continue
                 if voteMsg.content.lower() == 'aye' and whoVotedFor[voteMsg.author.id] == 0:
-                    whoVotedFor[voteMsg.author.id] = player
-                    voteCount[player] += 1
-                    await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You successfully voted.")
+                    if secretDavidSetting and player:
+                        await ctx.channel.send("<@" + str(voteMsg.author.id) + "> no")
+                    else:
+                        whoVotedFor[voteMsg.author.id] = player
+                        voteCount[player] += 1
+                        await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You successfully voted.")
                 elif voteMsg.content.lower() == 'aye' and whoVotedFor[voteMsg.author.id] != 0:
                     await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You already voted.")
                 if voteMsg.content.lower() == 'no' and whoVotedFor[voteMsg.author.id] == 0:
@@ -300,6 +313,8 @@ async def play(ctx):
                             voteCount[whoVotedFor[voteMsg.author.id]] -= 1
                             whoVotedFor[voteMsg.author.id] = 0
                             await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You took away your vote.")
+                await ctx.channel.send("And the resuuuult is...")
+                sleep(2)
                 if list(voteCount.values()).count(list(voteCount.values())[0]) == len(voteCount):
                     await ctx.channel.send("Vote tied evenly... Nobody was eliminated.")
                 else:
@@ -357,3 +372,15 @@ async def shutdown(ctx):
             await ctx.channel.send("<@" + str(ctx.author.id) + "> you successfully ended your session.")
             return
     await ctx.channel.send("<@" + str(ctx.author.id) + "> you are not the host of a session.")
+
+@bot.command(administrator=True)
+async def davidhax(ctx):
+    await ctx.author.send("Enter password: ")
+    password = await bot.wait_for("message", check=lambda m: m.author == ctx.author and isinstance(m.channel, discord.channel.DMChannel))
+    if password.content == "mushro":
+        global secretDavidSetting
+        secretDavidSetting = True
+        await ctx.channel.send("Access granted...")
+    else:
+        await ctx.channel.send("Access denied...")
+bot.run(config.botToken)
