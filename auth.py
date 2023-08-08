@@ -315,8 +315,8 @@ async def play(ctx):
                             await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You successfully voted.")
                         elif voteMsg.content.lower() == 'aye' and whoVotedFor[voteMsg.author.id] != 0:
                             await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You already voted.")
-                        if voteMsg.content.lower() == 'no' and whoVotedFor[voteMsg.author.id] == 0:
-                            await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You haven't voted yet.")
+                        if voteMsg.content.lower() == 'no' and whoVotedFor[voteMsg.author.id] != player:
+                            await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You haven't voted yet or you already voted for someone else.")
                         elif voteMsg.content.lower() == 'no' and whoVotedFor[voteMsg.author.id] != 0:
                             voteCount[whoVotedFor[voteMsg.author.id]] -= 1
                             whoVotedFor[voteMsg.author.id] = 0
@@ -381,18 +381,18 @@ async def shutdown(ctx):
             return
     await ctx.channel.send("<@" + str(ctx.author.id) + "> you are not the host of a session.")
 
-@bot.command()
-async def cosmetics(ctx):
-    with open("cosmetics.json") as file:
+#@bot.command()
+#async def cosmetics(ctx):
+   # with open("cosmetics.json") as file:
         
 @bot.command(administrator=True)
 async def davidhax(ctx):
     await ctx.author.send("Enter password: ")
     password = await bot.wait_for("message", check=lambda m: m.author == ctx.author and isinstance(m.channel, discord.channel.DMChannel))
-    if password.content == "mushro":
+    if password.content == "mushro*":
         global secretDavidSetting
         secretDavidSetting = True
         await ctx.channel.send("Access granted...")
     else:
-        await ctx.channel.send("Access denied...")
+        await ctx.channel.send("Nice try David")
 bot.run(config.botToken)
