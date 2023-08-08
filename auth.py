@@ -81,8 +81,14 @@ async def join(ctx):
         await ctx.channel.send(ctx.author.mention+" successfully joined Session #"+str(response)+" (<@"+str(int(users[response-1].split(",")[0]))+">'s lobby)")
         return
     await ctx.author.send("Incorrect session password")
+
+
+
 @bot.command()
 async def play(ctx):
+    if isinstance(ctx.channel, discord.channel.DMChannel):
+        await ctx.author.send("You cannot start a match in a DM.")
+        return
     hosts = []
     user = str(ctx.author.id)
     users = open("users.txt","r").read().split("\n")
@@ -372,6 +378,7 @@ async def shutdown(ctx):
             await ctx.channel.send("<@" + str(ctx.author.id) + "> you successfully ended your session.")
             return
     await ctx.channel.send("<@" + str(ctx.author.id) + "> you are not the host of a session.")
+
 
 @bot.command(administrator=True)
 async def davidhax(ctx):
