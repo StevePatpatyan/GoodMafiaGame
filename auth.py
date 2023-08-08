@@ -7,6 +7,8 @@ import config
 from random import randint
 from time import sleep
 from time import time
+import json
+
 secretDavidSetting = False
 intents = discord.Intents.default()
 intents.message_content = True
@@ -132,7 +134,7 @@ async def play(ctx):
             roles.pop(roleIndex)
     ###############################################################################
     await ctx.channel.send("Let us begin...")
-    while(len(players) >= 2):
+    while(len(players) > 2):
         if len(players) > 3:
             await ctx.channel.send("Night falls upon you...")
             sleep(2)
@@ -379,7 +381,10 @@ async def shutdown(ctx):
             return
     await ctx.channel.send("<@" + str(ctx.author.id) + "> you are not the host of a session.")
 
-
+@bot.command()
+async def cosmetics(ctx):
+    with open("cosmetics.json") as file:
+        print(type(json.load(file)))
 @bot.command(administrator=True)
 async def davidhax(ctx):
     await ctx.author.send("Enter password: ")
