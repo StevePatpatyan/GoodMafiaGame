@@ -266,9 +266,9 @@ async def play(ctx):
         voteCount = {}
         whoVotedFor = {player : 0 for player in players.values()}
         for player in players.values():
-            timeout = time() + 30
+            timeout = time() + 20
             voteCount[player] = 0
-            await ctx.channel.send("All in favor of voting for <@" + str(player) + "> say 'aye' and 'no' to take back your vote. 30 seconds to vote")
+            await ctx.channel.send("All in favor of voting for <@" + str(player) + "> say 'aye' and 'no' to take back your vote. 20 seconds to vote")
             while time() <= timeout:
                 try:
                     voteMsg = await bot.wait_for("message", check = voteCheck, timeout=5)
@@ -384,7 +384,7 @@ async def shutdown(ctx):
 @bot.command()
 async def cosmetics(ctx):
     with open("cosmetics.json") as file:
-        print(type(json.load(file)))
+        
 @bot.command(administrator=True)
 async def davidhax(ctx):
     await ctx.author.send("Enter password: ")
