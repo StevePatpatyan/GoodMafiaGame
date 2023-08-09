@@ -18,6 +18,13 @@ async def on_ready():
     print("ready")
 @bot.command()
 async def create(ctx):
+    with open("cosmetics.json") as file:
+        data = json.load(file)
+        file.close()
+    if ctx.author.id not in data:
+        with open("cosmetics.json", "w") as file:
+            data[ctx.author.id] = {'': True, "*": False, "**": False, "__": False, "--": False, "equipped": ""}
+            json.dump(data)
     user = str(ctx.author.id)
     users = "".join(open("users.txt","r").read().split("\n")).split(",")
     if user in users:
@@ -38,6 +45,13 @@ async def create(ctx):
     await ctx.channel.send(ctx.author.mention+" has successfully started a mafia session! Type \"^join\" to join.")
 @bot.command()
 async def join(ctx):
+    with open("cosmetics.json") as file:
+        data = json.load(file)
+        file.close()
+    if ctx.author.id not in data:
+        with open("cosmetics.json", "w") as file:
+            data[ctx.author.id] = {'': True, "*": False, "**": False, "__": False, "--": False, "equipped": ""}
+            json.dump(data)
     user = str(ctx.author.id)
     users =  open("users.txt","r").read().split("\n")
     if user in "".join(users).split(","):
@@ -381,10 +395,26 @@ async def shutdown(ctx):
             return
     await ctx.channel.send("<@" + str(ctx.author.id) + "> you are not the host of a session.")
 
-#@bot.command()
-#async def cosmetics(ctx):
-   # with open("cosmetics.json") as file:
-        
+@bot.command()
+async def cosmetics(ctx):
+    equips = ctx.content.replace("^cosmetics ", "").split(",")
+    equips = [equip.strip(" ") for equip in equips]
+    with open("cosmetics.json") as file:
+        data = json.load(file)
+        file.close()
+    if ctx.author.id not in data:
+        with open("cosmetics.json", "w") as file:
+            data[ctx.author.id] = {'': True, "*": False, "**": False, "__": False, "--": False, "equipped": ""}
+            json.dump(data)
+    userCosmetics = data[ctx.author.id]
+    for equip in equips:
+        if userCosmetics[equip] == False:
+            await ctx.author.send("You do not have the \'" + equip + "\" equip boss. Equip cancelled.")
+            return
+    data[ctx.author.id]["equipped"] = ",".join(equips)
+    with open("cosmetics.json", "w") as file:
+            json.dump(data)
+
 @bot.command(administrator=True)
 async def davidhax(ctx):
     await ctx.author.send("Enter password: ")
