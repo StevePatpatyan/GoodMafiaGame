@@ -68,7 +68,7 @@ async def join(ctx):
             if usr == "":
                 break
             player = await bot.fetch_user(int(usr))
-            player = player.name
+            player = data[usr]["equipped"] + player.name + data[usr]["equipped"]
             listOfSessions+= player+", "
         listOfSessions+="\n"
     await ctx.author.send(listOfSessions)
@@ -105,6 +105,9 @@ async def play(ctx):
     if isinstance(ctx.channel, discord.channel.DMChannel):
         await ctx.author.send("You cannot start a match in a DM.")
         return
+    with open("cosmetics.json") as file:
+        data = json.load(file)
+        file.close()
     hosts = []
     user = str(ctx.author.id)
     users = open("users.txt","r").read().split("\n")
@@ -119,7 +122,7 @@ async def play(ctx):
         return
     usersInSession.pop(0)
     for x in range(len(usersInSession)-1):
-        usersInSession[x] = "<@"+usersInSession[x]+">"
+        usersInSession[x] = data[usersInSession[x]]["equipped"] + "<@"+usersInSession[x]+">" + data[usersInSession[x]]["equipped"]
     usersInSession = "".join(usersInSession)
     await ctx.channel.send(usersInSession+" <@"+user+"> has started the Mafia Game!")
     #################################################################################
@@ -160,7 +163,7 @@ async def play(ctx):
             for player in players.values():
                 if players["mafia"] != player:
                     player = await bot.fetch_user(player)
-                    listOfUsers.append(player.name)
+                    listOfUsers.append(data[str(player)]["equipped"] + player.name + data[str(player)]["equipped"])
             listOfUsers = ",".join(listOfUsers)
             while True:
                 mafia = await bot.fetch_user((players["mafia"]))
@@ -185,10 +188,10 @@ async def play(ctx):
                     await mafia.send("That is not a player.")
             listOfUsers = listOfUsers.split(",")
             mafiaName = await bot.fetch_user(players["mafia"])
-            listOfUsers.append(mafiaName.name)
+            listOfUsers.append(data[str(players["mafia"])]["equipped"] + mafiaName.name + data[str(players["mafia"])]["equipped"])
             if savedSelf:
                 docName = await bot.fetch_user(players["doctor"])
-                listOfUsers.remove(docName.name)
+                listOfUsers.remove(data[str(players["doctor"])]["equipped"] + docName.name + data[str(players["doctor"])]["equipped"])
             listOfUsers = ",".join(listOfUsers)
             while True:
                 doctor = await bot.fetch_user((players["doctor"]))
@@ -219,7 +222,7 @@ async def play(ctx):
             listOfUsers = listOfUsers.split(",")
             if savedSelf and "doctor" in players:
                 docName = await bot.fetch_user(players["doctor"])
-                listOfUsers.append(docName.name)
+                listOfUsers.append(data[str(players["doctor"])]["equipped"] + docName.name + data[str(players["doctor"])]["equipped"])
             listOfUsers = ",".join(listOfUsers)
             while True:
                 detective = await bot.fetch_user((players["detective"]))
@@ -252,16 +255,16 @@ async def play(ctx):
                     await mafia.send("That is not a player.")
 ##################################################################################################################
             for x in range(len(usersInSession)-1):
-                usersInSession[x] = "<@"+usersInSession[x]+">"
+                usersInSession[x] = data[usersInSession[x]]["equipped"] + "<@"+usersInSession[x]+">" + data[usersInSession[x]]["equipped"]
             usersInSession = "".join(usersInSession)
             await ctx.channel.send(usersInSession + " Wake up! There is some news!")
             sleep(3)
             expos = open("expositions.txt","r").read().split("\n")
             deaths = open("deaths.txt","r").read().split("\n")
             revivals = open("revivals.txt","r").read().split("\n")                
-            chosenExpo = expos[randint(0,len(expos) - 1)].replace("[VIC]", "<@" + str(victim) + ">")
-            chosenDeath = deaths[randint(0,len(deaths) - 1)].replace("[VIC]", "<@" + str(victim) + ">")
-            chosenRevival = revivals[randint(0,len(revivals) - 1)].replace("[VIC]", "<@" + str(victim) + ">")
+            chosenExpo = expos[randint(0,len(expos) - 1)].replace("[VIC]", data[str(victim)]["equipped"] + "<@"+str(victim)+">" + data[str(victim)]["equipped"])
+            chosenDeath = deaths[randint(0,len(deaths) - 1)].replace("[VIC]", data[str(victim)]["equipped"] + "<@"+str(victim)+">" + data[str(victim)]["equipped"])
+            chosenRevival = revivals[randint(0,len(revivals) - 1)].replace("[VIC]", data[str(victim)]["equipped"] + "<@"+str(victim)+">" + data[str(victim)]["equipped"])
             await ctx.channel.send(chosenExpo)
             sleep(7)
             if patient == victim:
@@ -282,7 +285,7 @@ async def play(ctx):
         for player in players.values():
             timeout = time() + 20
             voteCount[player] = 0
-            await ctx.channel.send("All in favor of voting for <@" + str(player) + "> say 'aye' and 'no' to take back your vote. 20 seconds to vote")
+            await ctx.channel.send("All in favor of voting for "+ data[str(player)]["equipped"] + "<@"+str(player)+">" + data[str(player)]["equipped"] + " say 'aye' and 'no' to take back your vote. 20 seconds to vote")
             while time() <= timeout:
                 try:
                     voteMsg = await bot.wait_for("message", check = voteCheck, timeout=5)
@@ -290,19 +293,19 @@ async def play(ctx):
                     continue
                 if voteMsg.content.lower() == 'aye' and whoVotedFor[voteMsg.author.id] == 0:
                     if secretDavidSetting and player:
-                        await ctx.channel.send("<@" + str(voteMsg.author.id) + "> no")
+                        await ctx.channel.send(data[str(voteMsg.author.id)]["equipped"] + "<@" + str(voteMsg.author.id) + ">" + data[str(voteMsg.author.id)]["equipped"] + " no")
                     else:
                         whoVotedFor[voteMsg.author.id] = player
                         voteCount[player] += 1
-                        await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You successfully voted.")
+                        await ctx.channel.send(data[str(voteMsg.author.id)]["equipped"] + "<@" + str(voteMsg.author.id) + ">" + data[str(voteMsg.author.id)]["equipped"] + " You successfully voted.")
                 elif voteMsg.content.lower() == 'aye' and whoVotedFor[voteMsg.author.id] != 0:
-                    await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You already voted.")
+                    await ctx.channel.send(data[str(voteMsg.author.id)]["equipped"] + "<@" + str(voteMsg.author.id) + ">" + data[str(voteMsg.author.id)]["equipped"] + " You already voted.")
                 if voteMsg.content.lower() == 'no' and whoVotedFor[voteMsg.author.id] == 0:
-                    await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You haven't voted yet.")
+                    await ctx.channel.send(data[str(voteMsg.author.id)]["equipped"] + "<@" + str(voteMsg.author.id) + ">" + data[str(voteMsg.author.id)]["equipped"] + " You haven't voted yet.")
                 elif voteMsg.content.lower() == 'no' and whoVotedFor[voteMsg.author.id] != 0:
                     voteCount[whoVotedFor[voteMsg.author.id]] -= 1
                     whoVotedFor[voteMsg.author.id] = 0
-                    await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You took away your vote.")
+                    await ctx.channel.send(data[str(voteMsg.author.id)]["equipped"] + "<@" + str(voteMsg.author.id) + ">" + data[str(voteMsg.author.id)]["equipped"] + " You took away your vote.")
         if list(voteCount.values()).count(list(voteCount.values())[0]) == len(list(voteCount.values())):
             await ctx.channel.send("Vote tied evenly... Nobody was eliminated.")
             sleep(2)
@@ -320,45 +323,48 @@ async def play(ctx):
                 for player in subPlayers:
                     timeout = time() + 30
                     voteCount[player] = 0
-                    await ctx.channel.send("All in favor of voting for <@" + str(player) + "> say 'aye' and 'no' to take back your vote. 30 seconds to vote")
+                    await ctx.channel.send("All in favor of voting for "+ data[str(player)]["equipped"] + "<@"+str(player)+">" + data[str(player)]["equipped"] + " say 'aye' and 'no' to take back your vote. 20 seconds to vote")
                     while time() <= timeout:
                         voteMsg = await bot.wait_for("message", check = voteCheck)
                         if voteMsg.content.lower() == 'aye' and whoVotedFor[voteMsg.author.id] == 0:
                             whoVotedFor[voteMsg.author.id] = player
                             voteCount[player] += 1
-                            await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You successfully voted.")
+                            await ctx.channel.send(data[str(voteMsg.author.id)]["equipped"] + "<@" + str(voteMsg.author.id) + ">" + data[str(voteMsg.author.id)]["equipped"] + " You successfully voted.")
                         elif voteMsg.content.lower() == 'aye' and whoVotedFor[voteMsg.author.id] != 0:
-                            await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You already voted.")
+                            await ctx.channel.send(data[str(voteMsg.author.id)]["equipped"] + "<@" + str(voteMsg.author.id) + ">" + data[str(voteMsg.author.id)]["equipped"] + " You already voted.")
                         if voteMsg.content.lower() == 'no' and whoVotedFor[voteMsg.author.id] != player:
                             await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You haven't voted yet or you already voted for someone else.")
                         elif voteMsg.content.lower() == 'no' and whoVotedFor[voteMsg.author.id] != 0:
                             voteCount[whoVotedFor[voteMsg.author.id]] -= 1
                             whoVotedFor[voteMsg.author.id] = 0
-                            await ctx.channel.send("<@" + str(voteMsg.author.id) + "> You took away your vote.")
+                            await ctx.channel.send(data[str(voteMsg.author.id)]["equipped"] + "<@" + str(voteMsg.author.id) + ">" + data[str(voteMsg.author.id)]["equipped"] + " You took away your vote.")
                 await ctx.channel.send("And the resuuuult is...")
                 sleep(2)
                 if list(voteCount.values()).count(list(voteCount.values())[0]) == len(voteCount):
                     await ctx.channel.send("Vote tied evenly... Nobody was eliminated.")
                 else:
                     players = {role:player for role, player in players.items() if player != subPlayers[voteCount.values().index(max(voteCount.values()))]}
-                    await ctx.channel.send("<@" + str(subPlayers[list(voteCount.values()).index(max(list(voteCount.values())))]) + "> was eliminated")
+                    await ctx.channel.send(data[str(subPlayers[list(voteCount.values()).index(max(list(voteCount.values())))])]["equipped"] + "<@" + str(subPlayers[list(voteCount.values()).index(max(list(voteCount.values())))]) + ">" + data[str(subPlayers[list(voteCount.values()).index(max(list(voteCount.values())))])]["equipped"] + " was eliminated")
             else:
                 players = {role:player for role, player in players.items() if player != subPlayers[list(voteCount.values()).index(max(list(voteCount.values())))]}
-                await ctx.channel.send("<@" + str(subPlayers[list(voteCount.values()).index(max(list(voteCount.values())))]) + "> was eliminated")
+                await ctx.channel.send(data[str(subPlayers[list(voteCount.values()).index(max(list(voteCount.values())))])]["equipped"] + "<@" + str(subPlayers[list(voteCount.values()).index(max(list(voteCount.values())))]) + ">" + data[str(subPlayers[list(voteCount.values()).index(max(list(voteCount.values())))])]["equipped"] + " was eliminated")
 #####################################################################################################################################################################################
         if "mafia" not in players:
             await ctx.channel.send("Mafia eliminated! The town has became victorious!")
             return
-    await ctx.channel.send("Game over. The mafia was <@" + str(players["mafia"]) + ">")
+    await ctx.channel.send("Game over. The mafia was " + data[str(players["mafia"])] + "<@" + str(players["mafia"]) + ">" + data[str(players["mafia"])])
 
 @bot.command()
 async def leave(ctx):
+    with open("cosmetics.json") as file:
+        data = json.load(file)
+        file.close()
     with open("users.txt", "r") as usersFile:
         users = usersFile.read().split("\n")
         for x in range(len(users)):
             group = users[x].split(",")
             if str(ctx.author.id) in group:
-                await ctx.channel.send("<@" + str(ctx.author.id) + "> you successfully left <@" + str(group[0]) + ">'s session.")
+                await ctx.channel.send(data[str(ctx.author.id)]["equipped"] + "<@" + str(ctx.author.id) + ">" + data[str(ctx.author.id)]["equipped"] + " you successfully left " + data[str(group[0])]["equipped"] + "<@" + str(group[0]) + ">'s" + data[str(group[0])]["equipped"] + " session.")
                 if len(group) <= 2:
                     users.remove(users[x])
                     with open("passwords.txt", "r") as passFile:
@@ -372,12 +378,15 @@ async def leave(ctx):
                 with open("users.txt", "w") as usersFile:
                     usersFile.write("\n".join(users))
                 return
-    await ctx.channel.send("<@" + str(ctx.author.id) + "> you are not in a session.")
+    await ctx.channel.send(data[str(ctx.author.id)]["equipped"] + "<@" + str(ctx.author.id) + ">" + data[str(ctx.author.id)]["equipped"] + " you are not in a session.")
 
         
 
 @bot.command()
 async def shutdown(ctx):
+    with open("cosmetics.json") as file:
+        data = json.load(file)
+        file.close()
     with open("users.txt", "r") as usersFile:
         users = usersFile.read().split("\n")
     for x in range(len(users)):
@@ -391,9 +400,9 @@ async def shutdown(ctx):
                 passwords.remove(passwords[x])
             with open("passwords.txt", "w") as passFile:
                 passFile.write("\n".join(passwords))
-            await ctx.channel.send("<@" + str(ctx.author.id) + "> you successfully ended your session.")
+            await ctx.channel.send(data[str(ctx.author.id)]["equipped"] + "<@" + str(ctx.author.id) + ">" + data[str(ctx.author.id)]["equipped"] + " you successfully ended your session.")
             return
-    await ctx.channel.send("<@" + str(ctx.author.id) + "> you are not the host of a session.")
+    await ctx.channel.send(data[str(ctx.author.id)]["equipped"] + "<@" + str(ctx.author.id) + ">" + data[str(ctx.author.id)]["equipped"] + " you are not the host of a session.")
 
 @bot.command()
 async def cosmetics(ctx):
