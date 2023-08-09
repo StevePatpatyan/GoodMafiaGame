@@ -431,7 +431,9 @@ async def cosmetics(ctx):
     data[str(ctx.author.id)]["equipped"] = ",".join(equips)
     with open("cosmetics.json", "w") as file:
         json.dump(data, file)
-    await ctx.author.send("Successfully equpped!")
+    user = await bot.fetch_user(ctx.author.id)
+    user = data[str(ctx.author.id)]["equipped"] + "<@" + str(user.name) + ">" + data[str(ctx.author.id)]["equipped"]
+    await ctx.author.send(user + " Successfully equpped!")
 
 @bot.command(administrator=True)
 async def davidhax(ctx):
