@@ -411,10 +411,12 @@ async def cosmetics(ctx):
             json.dump(data, file)
     userCosmetics = data[str(ctx.author.id)]
     for equip in equips:
-        if equip not in userCosmetics or userCosmetics[equip] == False:
+        if (equip not in userCosmetics or userCosmetics[equip] == False) and equip != "off":
             await ctx.author.send("You do not have the \'" + equip + "\" equip boss. Equip cancelled.")
             return
         if equip == "off":
+            data[str(ctx.author.id)]["equipped"] = ""
+            equips.remove("off")
             for value in data[str(ctx.author.id)]:
                 data[str(ctx.author.id)][value] = False
     data[str(ctx.author.id)]["equipped"] = ",".join(equips)
