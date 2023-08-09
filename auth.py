@@ -21,10 +21,10 @@ async def create(ctx):
     with open("cosmetics.json") as file:
         data = json.load(file)
         file.close()
-    if ctx.author.id not in data:
+    if str(ctx.author.id) not in data:
         with open("cosmetics.json", "w") as file:
-            data[ctx.author.id] = {'': True, "*": False, "**": False, "__": False, "--": False, "equipped": ""}
-            json.dump(data)
+            data[ctx.author.id] = {"*": False, "**": False, "__": False, "--": False, "equipped": ""}
+            json.dump(data, file)
     user = str(ctx.author.id)
     users = "".join(open("users.txt","r").read().split("\n")).split(",")
     if user in users:
@@ -48,10 +48,10 @@ async def join(ctx):
     with open("cosmetics.json") as file:
         data = json.load(file)
         file.close()
-    if ctx.author.id not in data:
+    if str(ctx.author.id) not in data:
         with open("cosmetics.json", "w") as file:
-            data[ctx.author.id] = {'': True, "*": False, "**": False, "__": False, "--": False, "equipped": ""}
-            json.dump(data)
+            data[ctx.author.id] = {"*": False, "**": False, "__": False, "--": False, "equipped": ""}
+            json.dump(data, file)
     user = str(ctx.author.id)
     users =  open("users.txt","r").read().split("\n")
     if user in "".join(users).split(","):
@@ -397,23 +397,30 @@ async def shutdown(ctx):
 
 @bot.command()
 async def cosmetics(ctx):
-    equips = ctx.content.replace("^cosmetics ", "").split(",")
+    equips = ctx.message.content.replace("^cosmetics", "").split(",")
     equips = [equip.strip(" ") for equip in equips]
+    if len(equips) == 1 and "" in equips:
+        await ctx.author.send("You didn't give any equips to put on boss.")
+        return
     with open("cosmetics.json") as file:
         data = json.load(file)
         file.close()
-    if ctx.author.id not in data:
+    if str(ctx.author.id) not in data:
         with open("cosmetics.json", "w") as file:
-            data[ctx.author.id] = {'': True, "*": False, "**": False, "__": False, "--": False, "equipped": ""}
-            json.dump(data)
-    userCosmetics = data[ctx.author.id]
+            data[ctx.author.id] = {"*": False, "**": False, "__": False, "--": False, "equipped": ""}
+            json.dump(data, file)
+    userCosmetics = data[str(ctx.author.id)]
     for equip in equips:
-        if userCosmetics[equip] == False:
+        if equip not in userCosmetics or userCosmetics[equip] == False:
             await ctx.author.send("You do not have the \'" + equip + "\" equip boss. Equip cancelled.")
             return
-    data[ctx.author.id]["equipped"] = ",".join(equips)
+        if equip == "off":
+            for value in data[str(ctx.author.id)]:
+                data[str(ctx.author.id)][value] = False
+    data[str(ctx.author.id)]["equipped"] = ",".join(equips)
     with open("cosmetics.json", "w") as file:
-            json.dump(data)
+        json.dump(data, file)
+    await ctx.author.send("Successfully equpped!")
 
 @bot.command(administrator=True)
 async def davidhax(ctx):
