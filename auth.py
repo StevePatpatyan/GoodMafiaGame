@@ -23,7 +23,7 @@ async def create(ctx):
         file.close()
     if str(ctx.author.id) not in data:
         with open("cosmetics.json", "w") as file:
-            data[ctx.author.id] = {"*": True, "**": False, "__": False, "--": False, "equipped": ""}
+            data[ctx.author.id] = {"*": True, "**": False, "__": False, "~~": False, "equipped": ""}
             json.dump(data, file)
     user = str(ctx.author.id)
     users = "".join(open("users.txt","r").read().split("\n")).split(",")
@@ -50,7 +50,7 @@ async def join(ctx):
         file.close()
     if str(ctx.author.id) not in data:
         with open("cosmetics.json", "w") as file:
-            data[ctx.author.id] = {"*": True, "**": False, "__": False, "--": False, "equipped": ""}
+            data[ctx.author.id] = {"*": True, "**": False, "__": False, "~~": False, "equipped": ""}
             json.dump(data, file)
     user = str(ctx.author.id)
     users =  open("users.txt","r").read().split("\n")
@@ -416,7 +416,7 @@ async def cosmetics(ctx):
         file.close()
     if str(ctx.author.id) not in data:
         with open("cosmetics.json", "w") as file:
-            data[ctx.author.id] = {"*": True, "**": False, "__": False, "--": False, "equipped": ""}
+            data[ctx.author.id] = {"*": True, "**": False, "__": False, "~~": False, "equipped": ""}
             json.dump(data, file)
     userCosmetics = data[str(ctx.author.id)]
     for equip in equips:
